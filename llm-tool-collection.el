@@ -131,11 +131,13 @@ the tool is defined, it is additionally made available via
 `llm-tool-collection-get-all' and `llm-tool-collection-get-category',
 and all functions in `llm-tool-collection-post-define-functions' are
 called with the tool's spec as their argument."
-  (declare (indent defun)
+  (declare (indent 4)
+           (doc-string 4)
            (debug (&define symbolp sexp sexp stringp def-body)))
   (let* ((optional nil)
          (arg-syms '())
          (arg-specs '()))
+    (when (plist-get specs :async) (push 'callback-fn arg-syms))
     (dolist (arg args)
       (if (eq arg '&optional)
           (progn
@@ -229,19 +231,19 @@ similar will add all tools to the respective client:
 ;;; Tools
 
 (llm-tool-collection-deftool read-file
-  (:category "filesystem" :tags (filesystem editing) :confirm t :include t)
-  ((path "Path to the file to read. Supports relative paths and '~'."
-         :type string))
-  "Read the contents of a file and return its content as a string."
+    (:category "filesystem" :tags (filesystem editing) :confirm t :include t)
+    ((path "Path to the file to read. Supports relative paths and '~'."
+           :type string))
+    "Read the contents of a file and return its content as a string."
   (with-temp-buffer
     (insert-file-contents (expand-file-name path))
     (buffer-string)))
 
 (llm-tool-collection-deftool list-directory
-  (:category "filesystem" :tags (filesystem) :confirm t :include t)
-  ((path "Path to the directory. Supports relative paths and '~'."
-         :type string))
-  "List the contents of a specified directory."
+    (:category "filesystem" :tags (filesystem) :confirm t :include t)
+    ((path "Path to the directory. Supports relative paths and '~'."
+           :type string))
+    "List the contents of a specified directory."
   (let ((expanded-path (expand-file-name path)))
     (if (file-directory-p expanded-path)
         (string-join `(,(format "Contents of %s:" path)
@@ -250,10 +252,10 @@ similar will add all tools to the respective client:
       (error "%s is not a directory" expanded-path))))
 
 (llm-tool-collection-deftool create-file
-  (:category "filesystem" :tags (filesystem editing) :confirm t)
-  ((path "Path to the new file. Supports relative paths and '~'." :type string)
-   (content "Content to write to the file." :type string))
-  "Create a new file with the specified content if it does not already exist."
+    (:category "filesystem" :tags (filesystem editing) :confirm t)
+    ((path "Path to the new file. Supports relative paths and '~'." :type string)
+     (content "Content to write to the file." :type string))
+    "Create a new file with the specified content if it does not already exist."
   (let ((expanded-path (expand-file-name path)))
     (if (file-exists-p expanded-path)
         (error "File already exists: %s" expanded-path)
@@ -262,10 +264,10 @@ similar will add all tools to the respective client:
       (format "File created successfully: %s" path))))
 
 (llm-tool-collection-deftool create-directory
-  (:category "filesystem" :tags (filesystem) :confirm t)
-  ((path "Path to the new directory. Supports relative paths and '~'."
-         :type string))
-  "Create a new directory at the specified path if it does not already
+    (:category "filesystem" :tags (filesystem) :confirm t)
+    ((path "Path to the new directory. Supports relative paths and '~'."
+           :type string))
+    "Create a new directory at the specified path if it does not already
 exist."
   (let ((expanded-path (expand-file-name path)))
     (if (file-exists-p expanded-path)
@@ -290,12 +292,12 @@ Returns selected lines joined with newlines."
       (string-join selected-lines "\n"))))
 
 (llm-tool-collection-deftool view-buffer
-  (:category "buffers" :tags (buffers editing introspection))
-  ((buffer-name "Name of the buffer to view." :type string)
-   &optional
-   (offset "Line number to start reading from (0-based)." :type integer)
-   (limit "Maximum number of lines to return." :type integer))
-  "View contents of BUFFER-NAME with optional OFFSET and LIMIT."
+    (:category "buffers" :tags (buffers editing introspection))
+    ((buffer-name "Name of the buffer to view." :type string)
+     &optional
+     (offset "Line number to start reading from (0-based)." :type integer)
+     (limit "Maximum number of lines to return." :type integer))
+    "View contents of BUFFER-NAME with optional OFFSET and LIMIT."
   (if-let* ((buf (get-buffer buffer-name)))
       (with-current-buffer buf
         (let ((lines (split-string (buffer-string) "\n")))
@@ -303,13 +305,13 @@ Returns selected lines joined with newlines."
     (error "Buffer not found: %s" buffer-name)))
 
 (llm-tool-collection-deftool view-file
-  (:category "filesystem" :tags (filesystem editing introspection) :include t)
-  ((file "Absolute or relative path to the file to read. Supports '~'."
-         :type string)
-   &optional
-   (offset "Line number to start reading from (0-based)." :type integer)
-   (limit "Number of lines to read" :type integer))
-  "Read file contents with optional OFFSET and LIMIT."
+    (:category "filesystem" :tags (filesystem editing introspection) :include t)
+    ((file "Absolute or relative path to the file to read. Supports '~'."
+           :type string)
+     &optional
+     (offset "Line number to start reading from (0-based)." :type integer)
+     (limit "Number of lines to read" :type integer))
+    "Read file contents with optional OFFSET and LIMIT."
   (if (not (file-exists-p file))
       (error "File does not exist: %s" file)
     (with-temp-buffer
@@ -361,41 +363,41 @@ BUFFER-OR-FILE is either a buffer object or a file path string."
           (kill-buffer))))))
 
 (llm-tool-collection-deftool edit-buffer
-  (:category "buffers" :tags (buffers editing))
-  ((buffer-name "Name of the buffer to modify" :type string)
-   (old-string "Text to replace (must match exactly)" :type string)
-   (new-string "Text to replace old_string with" :type string))
-  "Edits Emacs buffers by replacing exactly one occurrence of old_string."
+    (:category "buffers" :tags (buffers editing))
+    ((buffer-name "Name of the buffer to modify" :type string)
+     (old-string "Text to replace (must match exactly)" :type string)
+     (new-string "Text to replace old_string with" :type string))
+    "Edits Emacs buffers by replacing exactly one occurrence of old_string."
   (let ((buffer (get-buffer buffer-name)))
     (unless buffer
       (error "Buffer not found: %s" buffer-name))
     (llm-tool-collection--make-edit buffer old-string new-string)))
 
 (llm-tool-collection-deftool edit-file
-  (:category "filesystem" :tags (filesystem editing) :confirm t)
-  ((file "Absolute or relative path to the file to modify" :type string)
-   (old-string "Text to replace (must match exactly)" :type string)
-   (new-string "Text to replace old_string with" :type string))
-  "Edit file by replacing exactly one match of OLD-STRING with NEW-STRING."
+    (:category "filesystem" :tags (filesystem editing) :confirm t)
+    ((file "Absolute or relative path to the file to modify" :type string)
+     (old-string "Text to replace (must match exactly)" :type string)
+     (new-string "Text to replace old_string with" :type string))
+    "Edit file by replacing exactly one match of OLD-STRING with NEW-STRING."
   (let ((expanded-file (expand-file-name file)))
     (unless (file-exists-p expanded-file)
       (error "File does not exist: %s" expanded-file))
     (llm-tool-collection--make-edit expanded-file old-string new-string)))
 
 (llm-tool-collection-deftool glob
-  (:category "filesystem" :tags (filesystem search) :include t)
-  ((pattern "Glob pattern to match files" :type string)
-   &optional
-   (path "Directory to search in" :type string))
-  "File pattern matching"
+    (:category "filesystem" :tags (filesystem search) :include t)
+    ((pattern "Glob pattern to match files" :type string)
+     &optional
+     (path "Directory to search in" :type string))
+    "File pattern matching"
   (let* ((default-directory (or path default-directory))
          (files (file-expand-wildcards pattern)))
     (string-join files "\n")))
 (llm-tool-collection-deftool replace-buffer
-  (:category "buffers" :tags (buffers editing) :confirm t)
-  ((buffer-name "Name of the buffer to overwrite" :type string)
-   (content "Content to write to the buffer" :type string))
-  "Completely overwrites the contents of BUFFER-NAME with CONTENT."
+    (:category "buffers" :tags (buffers editing) :confirm t)
+    ((buffer-name "Name of the buffer to overwrite" :type string)
+     (content "Content to write to the buffer" :type string))
+    "Completely overwrites the contents of BUFFER-NAME with CONTENT."
   (if-let* ((buffer (get-buffer buffer-name)))
       (progn
         (with-current-buffer buffer
@@ -406,11 +408,11 @@ BUFFER-OR-FILE is either a buffer object or a file path string."
     (error "Buffer does not exist: %s" buffer-name)))
 
 (llm-tool-collection-deftool replace-file
-  (:category "filesystem" :tags (filesystem editing) :confirm t)
-  ((file "Absolute or relative path to file to write.  \
+    (:category "filesystem" :tags (filesystem editing) :confirm t)
+    ((file "Absolute or relative path to file to write.  \
 Supports '~'." :type string)
-   (content "Content to write to the file" :type string))
-  "Completely overwrites file at FILE with the given CONTENT."
+     (content "Content to write to the file" :type string))
+    "Completely overwrites file at FILE with the given CONTENT."
   (let ((expanded-path (expand-file-name file)))
     (unless (file-exists-p expanded-path)
       (error "File does not exist: %s" expanded-path))
@@ -420,12 +422,12 @@ Supports '~'." :type string)
       (format "File replaced: %s" file))))
 
 (llm-tool-collection-deftool grep
-  (:category "filesystem" :tags (filesystem search system) :include t)
-  ((pattern "Regex pattern to search in file contents" :type string)
-   &optional
-   (include "File pattern to include in search" :type string)
-   (path "Directory to search in" :type string))
-  "Content search using regex"
+    (:category "filesystem" :tags (filesystem search system) :include t)
+    ((pattern "Regex pattern to search in file contents" :type string)
+     &optional
+     (include "File pattern to include in search" :type string)
+     (path "Directory to search in" :type string))
+    "Content search using regex"
   (let* ((default-directory (or path default-directory))
          (include-arg (if include
                           (format "--include=%s" (shell-quote-argument include))
@@ -439,13 +441,13 @@ Supports '~'." :type string)
       result)))
 
 (llm-tool-collection-deftool ls
-  (:category "filesystem" :tags (filesystem) :include t)
-  ((path "Absolute or relative path to directory to list.  \
+    (:category "filesystem" :tags (filesystem) :include t)
+    ((path "Absolute or relative path to directory to list.  \
 Supports '~'." :type string)
-   &optional
-   (ignore "Array of Elisp regexp patterns (e.g., \"\\\\.pdf$\") to ignore"
-           :type array :items (:type string)))
-  "Lists files and directories"
+     &optional
+     (ignore "Array of Elisp regexp patterns (e.g., \"\\\\.pdf$\") to ignore"
+             :type array :items (:type string)))
+    "Lists files and directories"
   (let* ((path (expand-file-name path))
          (files (directory-files path)))
     (when (and files ignore)
@@ -460,15 +462,15 @@ Supports '~'." :type string)
     (string-join (mapcar #'file-name-nondirectory files) "\n")))
 
 (llm-tool-collection-deftool buffer-search
-  (:category "buffers" :tags (buffers search introspection) :include t)
-  ((pattern "Regex pattern to search for in buffer contents.
+    (:category "buffers" :tags (buffers search introspection) :include t)
+    ((pattern "Regex pattern to search for in buffer contents.
 Regex syntax is that of Emacs -- parentheses are NOT escaped!
   example: search for \"'(defun\", not \"\\\\(defun\"."
-            :type string)
-   (buffer
-    "Name of buffer in which to search"
-    :type string))
-  "Search within a Emacs buffer using Emacs regex"
+              :type string)
+     (buffer
+      "Name of buffer in which to search"
+      :type string))
+    "Search within a Emacs buffer using Emacs regex"
   (let ((buf (get-buffer buffer)))
     (unless buffer
       (error "Buffer '%s' does not exist" buffer))
@@ -511,9 +513,9 @@ Error: %s"
          (buffer-live-p buf))))
 
 (llm-tool-collection-deftool list-buffers
-  (:category "buffers" :tags (buffers introspection) :include t)
-  ()
-  "Lists active, user-relevant buffers (excluding internal buffers)."
+    (:category "buffers" :tags (buffers introspection) :include t)
+    ()
+    "Lists active, user-relevant buffers (excluding internal buffers)."
   (let* ((all-buffers (buffer-list))
          (user-buffers (seq-filter
                         (lambda (buf)
@@ -534,9 +536,9 @@ Error: %s"
       (error "No user-relevant buffers found"))))
 
 (llm-tool-collection-deftool bash
-  (:category "system" :tags (system execution) :confirm t)
-  ((command "Command string to execute in bash" :type string))
-  "Executes bash COMMAND, returning its standard output.
+    (:category "system" :tags (system execution) :confirm t)
+    ((command "Command string to execute in bash" :type string))
+    "Executes bash COMMAND, returning its standard output.
 Signals an error if the command fails (non-zero exit code)
 or if process execution itself fails. Handles C-g interruption.
 WARNING: Executes arbitrary shell commands. Review carefully."
