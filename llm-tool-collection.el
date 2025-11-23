@@ -208,25 +208,12 @@ similar will add all tools to the respective client:
   (mapcar #'symbol-value llm-tool-collection--all-tools))
 
 ;;; Imenu
-
-;;;###autoload
 (cl-pushnew (list "LLM Tools"
                   (concat "^\\s-*("
                           (regexp-opt '("llm-tool-collection-deftool") t)
                           "\\s-+\\(" lisp-mode-symbol-regexp "\\)")
                   2)
             lisp-imenu-generic-expression :test #'equal)
-
-;;; Font-Lock
-
-;;;###autoload
-(defconst llm-tool-collection-font-lock-keywords
-  '(("(\\(llm-tool-collection-deftool\\)\\_>[ \t'(]*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
-     (1 'font-lock-keyword-face)
-     (2 'font-lock-function-name-face nil t))))
-
-;;;###autoload
-(font-lock-add-keywords 'emacs-lisp-mode llm-tool-collection-font-lock-keywords)
 
 ;;; Tools
 
