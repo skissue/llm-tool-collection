@@ -422,23 +422,46 @@ Supports '~'." :type string)
       (format "File replaced: %s" file))))
 
 (llm-tool-collection-deftool grep
-    (:category "filesystem" :tags (filesystem search system) :include t)
-    ((pattern "Regex pattern to search in file contents" :type string)
+    (:category "filesystem" :tags (filesystem search system) :async t :include t)
+    ((pattern "Regex pattern to search for in file contents."
+              :type string)
      &optional
-     (include "File pattern to include in search" :type string)
-     (path "Directory to search in" :type string))
-    "Content search using regex"
-  (let* ((default-directory (or path default-directory))
-         (include-arg (if include
-                          (format "--include=%s" (shell-quote-argument include))
-                        ""))
-         (command (format "grep -r -n -E %s %s ."
-                          (shell-quote-argument pattern)
-                          include-arg))
-         (result (shell-command-to-string command)))
-    (if (string-empty-p (string-trim result))
-        "No matches found"
-      result)))
+     (include "Glob pattern for files to limit search to. Defaults to searching all
+files."
+              :type string)
+     (path "Directory to search in. Must be an absolute path or start with `~`.
+Defaults to the current directory."
+           :type string)
+     (ignore-case "Whether to ignore case in the search pattern. Defaults to
+case-sensitive."
+                  :type boolean))
+    "Recursively search for a regular expression using grep."
+  (if (and path (not (file-directory-p path)))
+      (funcall callback-fn
+               (format "Error: path %s does not exist or is not a directory"
+                       path))
+    (let* ((default-directory (or path default-directory))
+           (output-buffer (generate-new-buffer " *grep-output*"))
+           (include-arg (if include
+                            (concat "--include=" include)
+                          "--include=*"))
+           (case-arg (if ignore-case
+                         "--ignore-case"
+                       "--no-ignore-case"))
+           (process (start-process "grep" output-buffer
+                                   "grep" "-r" "-n" "-E"
+                                   include-arg case-arg
+                                   pattern)))
+      (set-process-query-on-exit-flag process nil)
+      (set-process-sentinel
+       process
+       (lambda (_process _event)
+         (let ((result (with-current-buffer output-buffer
+                         (string-trim (buffer-string)))))
+           (if (string-empty-p result)
+               (funcall callback-fn "No matches found")
+             (funcall callback-fn result)))
+         (kill-buffer output-buffer))))))
 
 (llm-tool-collection-deftool ls
     (:category "filesystem" :tags (filesystem) :include t)

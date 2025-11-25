@@ -186,7 +186,7 @@ Lists user‑relevant buffers, excluding internal/temp buffers.
 + Author :: @ultronozm
 + Tags   :: filesystem, search, system
 
-Recursive =grep -E= with line numbers.  Supports /include/ glob and /path/ root.
+Recursive =grep -E= with line numbers.  Supports an optional /include/ glob for files to include, /path/ to search in, and /ignore-case/ to search case-insensitively.
 
 ** System
 :PROPERTIES:
