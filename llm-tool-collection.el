@@ -564,7 +564,14 @@ Error: %s"
     ((command "Command string to execute in bash" :type string))
     "Executes bash COMMAND, returning its standard output.
 Signals an error if the command fails (non-zero exit code)."
-  (let* ((output-buffer (generate-new-buffer " *bash-output*"))
+  (let* (
+         ;; Use a pipe instead of a PTY.  This prevents most programs from
+         ;; calling pagers and hanging forever.
+         (process-connection-type nil)
+         ;; Deal with programs that still insist on pagers/control codes.
+         (process-environment (append '("PAGER=cat" "TERM=dumb")
+                                      process-environment))
+         (output-buffer (generate-new-buffer " *bash-output*"))
          (process (start-process "bash" output-buffer
                                  "bash" "-c" command)))
     (set-process-query-on-exit-flag process nil)
