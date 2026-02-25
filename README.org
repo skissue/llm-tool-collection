@@ -1,7 +1,7 @@
 #+title: LLM Tool Collection
 #+author: Ad <me@skissue.xyz>
 
-A crowdsourced collection of tools to empower Large Language Models in Emacs.
+A curated collection of tools to empower Emacs-based LLM agents.
 
 * Table of Contents
 :PROPERTIES:
@@ -15,6 +15,7 @@ A crowdsourced collection of tools to empower Large Language Models in Emacs.
   - [[#buffers][Buffers]]
   - [[#search][Search]]
   - [[#system][System]]
+- [[#removed-tools][Removed Tools]]
 - [[#contributing][Contributing]]
   - [[#faster-iteration][Faster Iteration]]
 :END:
@@ -90,18 +91,6 @@ See [[#tool-list][Tool List]] for a list of tool names, descriptions, and catego
 :PROPERTIES:
 :CUSTOM_ID: filesystem
 :END:
-*** read-file
-+ Author :: @skissue
-+ Tags :: filesystem, editing
-
-Allows the LLM to open a file and read its contents.
-
-*** list-directory
-+ Author :: @skissue
-+ Tags :: filesystem
-
-Allows the LLM to list the contents of a directory.
-
 *** create-file
 + Author :: @skissue
 + Tags :: filesystem, editing
@@ -203,6 +192,12 @@ Runs an arbitrary Bash command and returns its standard output (errors if exit i
 + Tags   :: system, execution
 
 Evaluates an arbitrary Emacs Lisp expression in the current Emacs session and returns the printed result.
+
+* Removed Tools
+To keep this collection focused and curated, the following tools were removed in favor of other tools:
+
++ =read-file= (@skissue) :: Removed in favor of =view-file= (@ultronozm).
++ =list-directory= (@skissue) :: Removed in favor of =ls= (@ultronozm).
 
 * Contributing
 :PROPERTIES:
