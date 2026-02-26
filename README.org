@@ -203,7 +203,7 @@ To keep this collection focused and curated, the following tools were removed in
 :PROPERTIES:
 :CUSTOM_ID: contributing
 :END:
-Contributions to this project are welcome and encouraged! After all, this collection can't be crowdsourced if there's no crowd 🙃.
+Contributions to this project are welcome and encouraged!
 
 To write a new tool, use the ~llm-tool-collection-deftool~ macro. For details on its usage, see its docstring as well as the existing tools.
 
@@ -222,11 +222,11 @@ To write a new tool, use the ~llm-tool-collection-deftool~ macro. For details on
       (buffer-string)))
 #+end_src
 
-It's highly recommended to include ~:tags~, as well as appropriate values for the ~:confirm~ and ~:include~ parameters, depending on how dangerous the tool may be. Additionally, docstrings should be as LLM-friendly; consider instructing models on when to call a tool, and what tools it may want to chain together.
-
-After defining a tool, make sure to add it to the README! Use the existing documentation structure as an example.
-
-For non-trivial/complex tools, it's recommended to include a short screencast or demo of the tool in action. If able to test, also consider adding a note on which models tend to perform the best with the tool.
+Some guidelines:
++ It's highly recommended to include ~:tags~, as well as appropriate values for the ~:confirm~ and ~:include~ parameters, depending on how dangerous the tool may be.
++ Docstrings should be LLM-friendly; consider instructing models on when to call a tool, what tools it may want to chain together, and invariants to keep in mind.
++ To keep this collection curated, don't create new tools that have overlapping functionality with existing tools unless there is a meaningful fundamental difference. Consider whether an existing tool could be extended or improved instead. This is a living collection!
++ After defining a tool, make sure to add it to the README! Use the existing documentation structure as an example.
 
 When ready, submit a PR!
 
